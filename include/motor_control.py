@@ -3,7 +3,7 @@ import time
 
 
 class Control:
-    def __init__ (self):
+    def __init__(self):
         self.board = Arduino('/dev/ttyACM0')
         self.motorL = self.board.get_pin('d:8:o')
         self.motorR = self.board.get_pin('d:12:o')
@@ -34,17 +34,17 @@ class Control:
         setR = r - 100
 
         if setL != 0:
-            setL = setL/200
+            setL = setL / 200
 
         if setR != 0:
-            setR = setR/-200
+            setR = setR / -200
 
-        if l==0:
+        if l == 0:
             self.motorL.write(0)
         else:
             self.motorL.write(1)
 
-        if r==0:
+        if r == 0:
             self.motorR.write(0)
         else:
             self.motorR.write(1)
@@ -57,12 +57,3 @@ class Control:
         self.battery.enable_reporting()
         voltage = self.battery.read() / 321 * 5500
         return voltage
-
-
-
-
-
-
-
-
-

@@ -1,4 +1,4 @@
-from motor_control import Control
+from include.motor_control import Control
 import time
 
 
