@@ -7,24 +7,24 @@ import argparse
 import pickle as pkl
 
 
-def get_test_input(input_dim, cuda):
-    image = cv2.imread("imgs/messi.jpg")
-    image = cv2.resize(image, (input_dim, input_dim))
-    img_ = image[:, :, ::-1].transpose((2, 0, 1))
-    img_ = img_[np.newaxis, :, :, :] / 255.0
-    img_ = torch.from_numpy(img_).float()
-    # noinspection PyArgumentList
-    img_ = Variable(img_)
-    if cuda:
-        img_ = img_.cuda()
-    return img_
+# def get_test_input(input_dim, cuda):
+#     image = cv2.imread("imgs/messi.jpg")
+#     image = cv2.resize(image, (input_dim, input_dim))
+#     img_ = image[:, :, ::-1].transpose((2, 0, 1))
+#     img_ = img_[np.newaxis, :, :, :] / 255.0
+#     img_ = torch.from_numpy(img_).float()
+#     # noinspection PyArgumentList
+#     img_ = Variable(img_)
+#     if cuda:
+#         img_ = img_.cuda()
+#     return img_
 
 
 def prep_img(image, inpDim):
     """
-    Prepare image for inputting to the neural network. 
-    
-    Returns a Variable 
+    Prepare image for inputting to the neural network.
+
+    Returns a Variable
     """
     origIm = image
     dimension = origIm.shape[1], origIm.shape[0]
@@ -73,8 +73,8 @@ def arg_parse():
 
 
 if __name__ == '__main__':
-    cfgfile = "cfg/yolov3-tiny.cfg"
-    weightsfile = "yolov3-tiny.weights"
+    cfgfile = "../data/yolov3-tiny.cfg"
+    weightsfile = "../data/yolov3-tiny.weights"
     num_classes = 80
 
     args = arg_parse()
@@ -134,8 +134,8 @@ if __name__ == '__main__':
             output[:, [1, 3]] *= frame.shape[1]
             output[:, [2, 4]] *= frame.shape[0]
 
-            classes = load_classes('data/coco.names')
-            colors = pkl.load(open("pallete", "rb"))
+            classes = load_classes('../data/coco.names')
+            colors = pkl.load(open("../data/pallete", "rb"))
 
             list(map(lambda x: write_cli(x), output))
 
