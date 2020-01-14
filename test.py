@@ -1,5 +1,8 @@
-from include.yolo_v3 import ObjectDetection
+# from include.yolo_v3 import ObjectDetection
+from include.motor_fb import FeedBack
 
-od = ObjectDetection()
+# od = ObjectDetection()
+fb = FeedBack()
 
-od.human()
+# od.human()
+fb.straight(20, 15)
