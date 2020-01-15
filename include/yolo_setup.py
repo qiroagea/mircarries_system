@@ -4,7 +4,6 @@ import random
 import argparse
 import pickle as pkl
 from include.motor_control import Control
-import time
 
 classes = load_classes("data/coco.names")
 colors = pkl.load(open("data/pallete", "rb"))
@@ -58,13 +57,18 @@ def write_cli(x):
     print(label)
 
 
+person_check = 0
+
+
 def person_safe(x):
+    global person_check
     cls = int(x[-1])
     label = "{0}".format(classes[cls])
     print(label)
     if label == "person":
-        control.stop()
-        time.sleep(3)
+        person_check = 1
+    else:
+        person_check = 0
 
 
 def arg_parse():

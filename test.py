@@ -1,8 +1,13 @@
-# from include.yolo_v3 import ObjectDetection
-from include.motor_fb import FeedBack
+from include.yolo_v3 import ObjectDetection
+from include.motor_control import Control
 
-# od = ObjectDetection()
-fb = FeedBack()
+od = ObjectDetection()
+cl = Control()
 
-# od.human()
-fb.straight(20, 15)
+while 1:
+    x = od.human()
+    print(x)
+    if x == 0:
+        cl.set(22, 25)
+    else:
+        cl.stop()

@@ -1,6 +1,7 @@
 from __future__ import division
 from include.darknet import Darknet
 from include.yolo_setup import *
+import time
 
 
 class ObjectDetection:
@@ -68,9 +69,8 @@ class ObjectDetection:
 
             list(map(lambda x: person_safe(x), output))
 
-            print(lambda x:person_safe(x))
-
             self.frames += 1
             # print("FPS of the video is {:5.2f}".format(frames / (time.time() - start)))
+            return person_check
         else:
-            return
+            return person_check
