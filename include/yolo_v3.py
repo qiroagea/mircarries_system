@@ -1,73 +1,76 @@
-from include.yolo_setup import *
-import time
+from __future__ import division
 from include.darknet import Darknet
-import pickle as pkl
+from include.yolo_setup import *
 
 
 class ObjectDetection:
     def __init__(self):
-        cfg_file = "../data/yolov3-tiny.cfg"
-        weights_file = "../data/yolov3-tiny.weights"
+        cfgfile = "data/yolov3-tiny.cfg"
+        weightsfile = "data/yolov3-tiny.weights"
         num_classes = 80
 
         args = arg_parse()
-        confidence = float(args.confidence)
-        nms_thesh = float(args.nms_thesh)
+        self.confidence = float(args.confidence)
+        self.nms_thesh = float(args.nms_thresh)
         start = 0
+        self.CUDA = torch.cuda.is_available()
 
+        # noinspection PyRedeclaration
+        self.num_classes = 80
         bbox_attrs = 5 + num_classes
 
-        model = Darknet(cfg_file)
-        model.load_weights(weights_file)
+        self.model = Darknet(cfgfile)
+        self.model.load_weights(weightsfile)
 
-        model.net_info["height"] = args.reso
-        inp_dim = int(model.net_info["height"])
+        self.model.net_info["height"] = args.reso
+        self.inp_dim = int(self.model.net_info["height"])
 
-        assert inp_dim % 32 == 0
-        assert inp_dim > 32
+        assert self.inp_dim % 32 == 0
+        assert self.inp_dim > 32
 
-        model.eval()
+        if self.CUDA:
+            self.model.cuda()
 
-        video_file = 'video.avi'
+        self.model.eval()
 
-        cap = cv2.VideoCapture(0)
+        videofile = 'video.avi'
 
-        assert cap.isOpened(), 'Cannot capture source'
+        self.cap = cv2.VideoCapture(0)
 
-        # frames = 0
+        assert self.cap.isOpened(), 'Cannot capture source'
+
+        self.frames = 0
         start = time.time()
 
     def human(self):
-        ret, frame = cap.read()
+        ret, frame = self.cap.read()
         if ret:
-            img, orig_im, dim = prep_img(frame, inp_dim)
 
-            output = model(Variable(img), CUDA)
-            output = write_results(
-                output,
-                confidence,
-                num_classes,
-                nms=True,
-                nms_conf=nms_thesh
-            )
+            img, orig_im, dim = prep_img(frame, self.inp_dim)
+
+            if self.CUDA:
+                # noinspection PyUnboundLocalVariable
+                self.im_dim = self.im_dim.cuda()
+                img = img.cuda()
+
+            output = self.model(Variable(img), self.CUDA)
+            output = write_results(output, self.confidence, self.num_classes, nms=True, nms_conf=self.nms_thesh)
 
             if type(output) == int:
-                # frames += 1
-                # continue
-                return -1
+                self.frames += 1
+                # print("FPS of the video is {:5.2f}".format(frames / (time.time() - start)))
+                return
 
-            output[:, 1:5] = torch.clamp(output[:, 1:5], 0.0, float(inp_dim)) / inp_dim
+            output[:, 1:5] = torch.clamp(output[:, 1:5], 0.0, float(self.inp_dim)) / self.inp_dim
 
             output[:, [1, 3]] *= frame.shape[1]
             output[:, [2, 4]] *= frame.shape[0]
 
-            # classes = load_classes('../data/coco.names')
-            # colors = pkl.load(open("../data/pallete", "rb"))
+            list(map(lambda x: person_safe(x), output))
 
-            list(map(lambda x: write_cli(x), output))
+            print(lambda x:person_safe(x))
 
-            # frames += 1
-            return 0
-
+            self.frames += 1
+            # print("FPS of the video is {:5.2f}".format(frames / (time.time() - start)))
         else:
-            return -1
+            return

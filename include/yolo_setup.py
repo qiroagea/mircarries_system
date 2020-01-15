@@ -3,9 +3,25 @@ from include.util import *
 import random
 import argparse
 import pickle as pkl
+from include.motor_control import Control
+import time
 
-classes = load_classes('../data/coco.names')
-colors = pkl.load(open('../data/pallete', 'rb'))
+classes = load_classes("data/coco.names")
+colors = pkl.load(open("data/pallete", "rb"))
+control = Control()
+
+
+def get_test_input(input_dim, cuda):
+    image = cv2.imread("imgs/messi.jpg")
+    image = cv2.resize(image, (input_dim, input_dim))
+    img_ = image[:, :, ::-1].transpose((2, 0, 1))
+    img_ = img_[np.newaxis, :, :, :] / 255.0
+    img_ = torch.from_numpy(img_).float()
+    # noinspection PyArgumentList
+    img_ = Variable(img_)
+    if cuda:
+        img_ = img_.cuda()
+    return img_
 
 
 def prep_img(image, inpDim):
@@ -42,6 +58,15 @@ def write_cli(x):
     print(label)
 
 
+def person_safe(x):
+    cls = int(x[-1])
+    label = "{0}".format(classes[cls])
+    print(label)
+    if label == "person":
+        control.stop()
+        time.sleep(3)
+
+
 def arg_parse():
     """
     Parse arguements to the detect module
@@ -58,76 +83,3 @@ def arg_parse():
         type=str
     )
     return parser.parse_args()
-
-
-# if __name__ == '__main__':
-#     cfgfile = "../data/yolov3-tiny.cfg"
-#     weightsfile = "../data/yolov3-tiny.weights"
-#     num_classes = 80
-#
-#     args = arg_parse()
-#     confidence = float(args.confidence)
-#     nms_thesh = float(args.nms_thresh)
-#     start = 0
-#     CUDA = torch.cuda.is_available()
-#
-#     # noinspection PyRedeclaration
-#     num_classes = 80
-#     bbox_attrs = 5 + num_classes
-#
-#     model = Darknet(cfgfile)
-#     model.load_weights(weightsfile)
-#
-#     model.net_info["height"] = args.reso
-#     inp_dim = int(model.net_info["height"])
-#
-#     assert inp_dim % 32 == 0
-#     assert inp_dim > 32
-#
-#     if CUDA:
-#         model.cuda()
-#
-#     model.eval()
-#
-#     videofile = 'video.avi'
-#
-#     cap = cv2.VideoCapture(0)
-#
-#     assert cap.isOpened(), 'Cannot capture source'
-#
-#     frames = 0
-#     start = time.time()
-#     while cap.isOpened():
-#
-#         ret, frame = cap.read()
-#         if ret:
-#
-#             img, orig_im, dim = prep_img(frame, inp_dim)
-#
-#             if CUDA:
-#                 # noinspection PyUnboundLocalVariable
-#                 im_dim = im_dim.cuda()
-#                 img = img.cuda()
-#
-#             output = model(Variable(img), CUDA)
-#             output = write_results(output, confidence, num_classes, nms=True, nms_conf=nms_thesh)
-#
-#             if type(output) == int:
-#                 frames += 1
-#                 # print("FPS of the video is {:5.2f}".format(frames / (time.time() - start)))
-#                 continue
-#
-#             output[:, 1:5] = torch.clamp(output[:, 1:5], 0.0, float(inp_dim)) / inp_dim
-#
-#             output[:, [1, 3]] *= frame.shape[1]
-#             output[:, [2, 4]] *= frame.shape[0]
-#
-#             classes = load_classes('../data/coco.names')
-#             colors = pkl.load(open("../data/pallete", "rb"))
-#
-#             list(map(lambda x: write_cli(x), output))
-#
-#             frames += 1
-#             # print("FPS of the video is {:5.2f}".format(frames / (time.time() - start)))
-#         else:
-#             break
