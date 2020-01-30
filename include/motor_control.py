@@ -14,6 +14,8 @@ class Control:
         self.pwmL.write(0.5)
         self.pwmR.write(0.5)
         self.battery = self.board.get_pin('a:5:i')
+        self.encLA = self.board.get_pin('d:2:i')
+        self.encLB = self.board.get_pin('d:4:i')
         self.it = util.Iterator(self.board)
         self.it.start()
 
@@ -57,3 +59,12 @@ class Control:
         self.battery.enable_reporting()
         voltage = self.battery.read() / 321 * 5500
         return voltage
+
+    def encState(self):
+        time.sleep(0.01)
+        self.encLA.enable_reporting()
+        self.encLB.enable_reporting()
+        roconLA = self.encLA.read()
+        roconLB = self.encLB.read()
+        return [roconLA, roconLB]
+
